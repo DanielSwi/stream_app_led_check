@@ -54,7 +54,7 @@ def main():
     # only_smaller: bool = True if st.checkbox(f'Get only smaller possibilities if, can not have exact distance') else False
 
     if st.button("Calculate : "):
-        max_size = max(sides.values())
+        max_size = max(sides.values()) + 1
         paths_dict, to_cuts = find_shortest_paths(start=0, end=max_size, possible_lengths=possible_lengths, step=0.1)
         for k, v in sides.items():
             res[k] = round(v - angles[k] * angle_length, 1), paths_dict.get(round(v - angles[k] * angle_length, 1))
