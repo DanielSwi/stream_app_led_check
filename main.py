@@ -2,6 +2,20 @@ import streamlit as st
 import pandas as pd
 from collections import Counter
 import numpy as np 
+import cv2
+import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+from matplotlib.gridspec import GridSpec
+import numpy as np
+from threading import Thread
+
+def showImage(img):
+
+    def show(img):
+        cv2.imshow('a', img)
+        cv2.waitKey()
+
+    Thread(target=show, args=[img]).start()
 
 def find_shortest_paths(possible_lengths, start, end, step):
     # Sort the possible lengths in descending order
@@ -34,7 +48,18 @@ def find_shortest_paths(possible_lengths, start, end, step):
 
     return shortest_paths, to_cut
 
-
+get_color = {
+    0.3: (255, 0, 255), 
+    0.6: (255, 0, 0), 
+    1 :(125, 255, 255),
+    1.2 : (0, 255, 156), 
+    1.3 :(100, 255, 0),
+    1.5: (125, 125, 125), 
+    2: (0, 0, 255),
+    3: (255, 120, 120),
+    "angle": (160, 39, 46)
+}
+  
 def main():
     angle_length: float = 0.3
     possible_lengths: list[float] = [0.3, 0.6, 1, 1.2, 1.3, 1.5, 2, 3]
@@ -73,23 +98,57 @@ def main():
             df_dict["need_to_cut"].append(dist in to_cuts)
         st.table(pd.DataFrame(df_dict))
 
-        # canvas = np.zeros((max_size + 10, max_size + 10))
-        # get_color = {length: i * 10 + 10 for i, length in enumerate(possible_lengths)}
-        # get_color['angle'] = 10
-
-        # start_point = (10, 10)
-        # thickness = 1
-
-        # for k, angle in angles.items():
-        #     if k == 0 and angle > 1:
+    directions = [np.array([1, 0]), np.array([0, 1]), np.array([-1, 0]), np.array([0, -1])]
+    if st.button("Show drawing : "):
+        max_size = max(sides.values()) + 1
+        paths_dict, to_cuts = find_shortest_paths(start=0, end=max_size, possible_lengths=possible_lengths, step=0.1)
+        for k, v in sides.items():
+            res[k] = round(v - angles[k] * angle_length, 1), paths_dict.get(round(v - angles[k] * angle_length, 1))
+        const_size_multiplier_for_int = 100
+        canvas = np.zeros((int(max_size * const_size_multiplier_for_int) * 2, 
+                           int(max_size * const_size_multiplier_for_int) * 2, 3))
+        cur_point = np.array([int(max_size * const_size_multiplier_for_int) // 2, 5])
+        thickness = 2
+        on_x = True 
+        done_angles = 0
+        for idx, (k, (dist, v)) in enumerate(res.items()):
+            num_angles = angles.get(k) - done_angles
+            for led_size, num_of in dict(Counter(v)).items():
+                for _ in range(num_of):
+                    adding = directions[idx] * int(led_size * const_size_multiplier_for_int)
+                    canvas = cv2.line(canvas, cur_point, cur_point + adding, get_color[led_size], thickness) 
+                    cur_point = cur_point + adding
                 
-        #         canvas = cv2.line(canvas, start_point, end_point, get_color("angle"), thickness) 
-        #         image = cv2.line(image, start_point, end_point, color, thickness) 
+            if num_angles:
+                adding = directions[idx] * int(angle_length * const_size_multiplier_for_int)
+                second_part_angle = directions[(idx + 1) % len(directions)] * int(angle_length * const_size_multiplier_for_int)
 
+                canvas = cv2.line(canvas, cur_point, cur_point + adding, get_color["angle"], thickness)  
+                canvas = cv2.line(canvas, cur_point + adding, cur_point + adding + second_part_angle, get_color["angle"], thickness) 
+                cur_point = cur_point + adding + second_part_angle
+                done_angles = 1
 
+            on_x = False
+        xs = np.argwhere(canvas > 0)[:, 0]
+        ys = np.argwhere(canvas > 0)[:, 1]
+        xmin, xmax = min(xs), max(xs)
+        ymin, ymax = min(ys), max(ys)
 
+        new_canvas_buffer = 20
+        new_canvas = np.zeros(((xmax - xmin) + new_canvas_buffer, (ymax - ymin) + new_canvas_buffer , 3))
+        new_canvas[new_canvas_buffer //2: -new_canvas_buffer //2, new_canvas_buffer // 2: -new_canvas_buffer // 2, :] = canvas[xmin: xmax, ymin: ymax, :]
 
-
+        fig, ax = plt.subplots(1)
+        handles = [
+            Rectangle((0,0),1,1, color = tuple((v/255 for v in c))) for c in get_color.values()
+        ]
+        labels = [str(k) for k in get_color.keys()]
+        # cv2.imwrite("canvas.png", cv2.cvtColor(new_canvas, cv2.COLOR_RGB2BGR))
+        st.image(new_canvas / 255, caption="Drawing of leds dimensions",channels="RGB")
+        ax.legend(handles,labels, mode='expand', ncol=3)
+        ax.axis('off')
+        plt.savefig("legend.png")
+        st.image("legend.png", caption="Legend")
 
 if __name__ == "__main__":
     main()
