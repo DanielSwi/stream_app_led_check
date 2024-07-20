@@ -6,16 +6,7 @@ import cv2
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from matplotlib.gridspec import GridSpec
-import numpy as np
-from threading import Thread
 
-def showImage(img):
-
-    def show(img):
-        cv2.imshow('a', img)
-        cv2.waitKey()
-
-    Thread(target=show, args=[img]).start()
 
 def find_shortest_paths(possible_lengths, start, end, step):
     # Sort the possible lengths in descending order
@@ -49,11 +40,11 @@ def find_shortest_paths(possible_lengths, start, end, step):
     return shortest_paths, to_cut
 
 get_color = {
-    0.3: (255, 0, 255), 
+    0.3: (100, 255, 0),
     0.6: (255, 0, 0), 
     1 :(125, 255, 255),
     1.2 : (0, 255, 156), 
-    1.3 :(100, 255, 0),
+    1.3 :(255, 0, 255),
     1.5: (125, 125, 125), 
     2: (0, 0, 255),
     3: (255, 120, 120),
@@ -143,12 +134,11 @@ def main():
             Rectangle((0,0),1,1, color = tuple((v/255 for v in c))) for c in get_color.values()
         ]
         labels = [str(k) for k in get_color.keys()]
-        # cv2.imwrite("canvas.png", cv2.cvtColor(new_canvas, cv2.COLOR_RGB2BGR))
         st.image(new_canvas / 255, caption="Drawing of leds dimensions",channels="RGB")
         ax.legend(handles,labels, mode='expand', ncol=3)
         ax.axis('off')
-        plt.savefig("legend.png")
-        st.image("legend.png", caption="Legend")
+        st.pyplot(fig)
+
 
 if __name__ == "__main__":
     main()
