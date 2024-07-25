@@ -75,7 +75,7 @@ def main(debug: bool = False):
             """, unsafe_allow_html=True)
 
     angle_length: float = 0.3
-    possible_lengths: list[float] = [0.3, 0.6, 1, 1.2, 1.3, 1.5, 2, 3]
+    possible_lengths: list[float] = [0.2, 0.3, 0.6, 1, 1.2, 1.3, 1.5, 2, 3]
 
     num_sides: int = int(st.number_input("כמה צדדים: ", step=1))
     sides, angles, res = dict(), dict(), dict()
@@ -179,17 +179,27 @@ def main(debug: bool = False):
         insert_points = list(set([((x - xmin) + new_canvas_buffer //2, (y - ymin) + new_canvas_buffer // 2) for y, x in insert_points]))
         fig_image = px.imshow(new_canvas)
         height, width, _ = new_canvas.shape
-        print(new_canvas.shape)
-        print(insert_points)
+        
         for _idx, _inner_point in enumerate(insert_points):
-            
+              
             fig_image.add_trace(go.Scatter(x=[_inner_point[1]], y=[_inner_point[0]], 
                                            marker=dict(color='white', size=4), text=str(_idx), name=f"Connection point: {_idx}"))
 
-        # if num_sides > 1:
-        #     st.image(new_canvas / 255, caption="אורכים של הפסים | א",channels="RGB")
-        #     st.image(cv2.flip(new_canvas, 1) / 255, caption="אורכים של הפסים | ב",channels="RGB")
+        if num_sides > 1:
+            canvas_flip = c2.flip(canvas, 1)
+            insert_points = np.argwhere(canvas_flip == -1)[:, :2]
+            insert_points = list(set([((x - xmin) + new_canvas_buffer //2, (y - ymin) + new_canvas_buffer // 2) for y, x in insert_points]))
+            fig_image_two = px.imshow(cv2.flip(new_canvas, 1)
+            height, width, _ = new_canvas.shape
+            for _idx, _inner_point in enumerate(insert_points):
+            
+                fig_image_two.add_trace(go.Scatter(x=[_inner_point[1]], y=[_inner_point[0]], 
+                                           marker=dict(color='white', size=4), text=str(_idx), name=f"Connection point: {_idx}"))
+
         st.plotly_chart(fig_image, theme=None, use_container_width=True)
+        if num_sides >1:
+            st.plotly_chart(fig_image_two, theme=None, use_container_width=True
+                           )
         ax.legend(handles,labels, mode='expand', ncol=3)
         ax.axis('off')
         st.pyplot(fig)
