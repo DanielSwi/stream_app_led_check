@@ -191,7 +191,7 @@ def main(debug: bool = False):
             height, width, _ = new_canvas.shape
             for _idx, _inner_point in enumerate(insert_points):
             
-                fig_image_two.add_trace(go.Scatter(x=[(height - _inner_point[1]) + new_canvas_buffer], y=[_inner_point[0]], 
+                fig_image_two.add_trace(go.Scatter(x=[(width - _inner_point[1]) + new_canvas_buffer], y=[_inner_point[0]], 
                                            marker=dict(color='white', size=4), text=str(_idx), name=f"Connection point: {_idx}"))
 
         st.plotly_chart(fig_image, theme=None, use_container_width=True)
