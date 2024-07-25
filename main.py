@@ -44,6 +44,7 @@ def find_shortest_paths(possible_lengths, start, end, step):
     return shortest_paths, to_cut
 
 get_color = {
+    0.2: (50, 110, 200),
     0.3: (100, 255, 0),
     0.6: (255, 0, 0), 
     1 :(125, 255, 255),
