@@ -189,7 +189,7 @@ def main(debug: bool = False):
             canvas_flip = c2.flip(canvas, 1)
             insert_points = np.argwhere(canvas_flip == -1)[:, :2]
             insert_points = list(set([((x - xmin) + new_canvas_buffer //2, (y - ymin) + new_canvas_buffer // 2) for y, x in insert_points]))
-            fig_image_two = px.imshow(cv2.flip(new_canvas, 1)
+            fig_image_two = px.imshow(cv2.flip(new_canvas, 1))
             height, width, _ = new_canvas.shape
             for _idx, _inner_point in enumerate(insert_points):
             
